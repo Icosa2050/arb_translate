@@ -9,6 +9,7 @@ enum ModelProvider {
   gemini('gemini', 'Gemini'),
   vertexAi('vertex-ai', 'Vertex AI'),
   openAi('open-ai', 'Open AI'),
+  openRouter('openrouter', 'OpenRouter'),
   customOpenAiCompatible('custom', 'Custom Open AI compatible');
 
   const ModelProvider(this.key, this.name);
@@ -30,17 +31,27 @@ enum Model {
   gpt4('gpt-4', 'GPT-4'),
   gpt4Turbo('gpt-4-turbo', 'GPT-4 Turbo'),
   gpt4O('gpt-4o', 'GPT-4o'),
-  gpt4OMini('gpt-4o-mini', 'GPT-4o mini');
+  gpt4OMini('gpt-4o-mini', 'GPT-4o mini'),
+  // OpenRouter models
+  claude35Sonnet('anthropic/claude-3.5-sonnet', 'Claude 3.5 Sonnet'),
+  claude3Haiku('anthropic/claude-3-haiku', 'Claude 3 Haiku'),
+  openRouterGpt4O('openai/gpt-4o', 'GPT-4o (OpenRouter)'),
+  openRouterGemini2Flash('google/gemini-2.0-flash-exp', 'Gemini 2.0 Flash (OpenRouter)');
 
   const Model(this.key, this.name);
 
   final String key;
   final String name;
 
-  List<ModelProvider> get providers =>
-      geminiModels.contains(this)
-          ? [ModelProvider.gemini, ModelProvider.vertexAi]
-          : [ModelProvider.openAi];
+  List<ModelProvider> get providers {
+    if (geminiModels.contains(this)) {
+      return [ModelProvider.gemini, ModelProvider.vertexAi];
+    } else if (openRouterModels.contains(this)) {
+      return [ModelProvider.openRouter];
+    } else {
+      return [ModelProvider.openAi];
+    }
+  }
 
   /// Returns a set of Gemini models.
   static Set<Model> get geminiModels => {
@@ -60,6 +71,14 @@ enum Model {
     Model.gpt4Turbo,
     Model.gpt4O,
     Model.gpt4OMini,
+  };
+
+  /// Returns a set of OpenRouter models.
+  static Set<Model> get openRouterModels => {
+    Model.claude35Sonnet,
+    Model.claude3Haiku,
+    Model.openRouterGpt4O,
+    Model.openRouterGemini2Flash,
   };
 }
 
@@ -114,26 +133,22 @@ class TranslateOptions {
     TranslateArgResults argResults,
     TranslateYamlResults yamlResults,
   ) {
-    final apiKey =
-        argResults.apiKey ??
-        yamlResults.apiKey ??
-        Platform.environment['ARB_TRANSLATE_API_KEY'];
-
-    if (apiKey == null || apiKey.isEmpty) {
-      throw MissingApiKeyException();
-    }
-
     final modelProvider =
         argResults.modelProvider ??
         yamlResults.modelProvider ??
         ModelProvider.gemini;
 
-    final model =
-        argResults.model ??
+    final apiKey = argResults.apiKey ??
+        yamlResults.apiKey ??
+        _getApiKeyForProvider(modelProvider);
+
+    if (apiKey == null || apiKey.isEmpty) {
+      throw MissingApiKeyException();
+    }
+
+    final model = argResults.model ??
         yamlResults.model ??
-        (modelProvider == ModelProvider.openAi
-            ? Model.gpt35Turbo
-            : Model.gemini25Flash);
+        _getDefaultModelForProvider(modelProvider);
     final customModel = argResults.customModel ?? yamlResults.customModel;
 
     if (modelProvider != ModelProvider.customOpenAiCompatible) {
@@ -214,5 +229,32 @@ class TranslateOptions {
       useEscaping: argResults.useEscaping ?? yamlResults.useEscaping,
       relaxSyntax: argResults.relaxSyntax ?? yamlResults.relaxSyntax,
     );
+  }
+
+  /// Gets the appropriate API key environment variable for the given provider.
+  static String? _getApiKeyForProvider(ModelProvider provider) {
+    return switch (provider) {
+      ModelProvider.gemini || ModelProvider.vertexAi => 
+        Platform.environment['ARB_TRANSLATE_API_KEY'] ?? 
+        Platform.environment['GEMINI_API_KEY'],
+      ModelProvider.openAi => 
+        Platform.environment['ARB_TRANSLATE_API_KEY'] ?? 
+        Platform.environment['OPENAI_API_KEY'],
+      ModelProvider.openRouter => 
+        Platform.environment['ARB_TRANSLATE_API_KEY'] ?? 
+        Platform.environment['OPENROUTER_API_KEY'],
+      ModelProvider.customOpenAiCompatible => 
+        Platform.environment['ARB_TRANSLATE_API_KEY'],
+    };
+  }
+
+  /// Gets the default model for the given provider.
+  static Model _getDefaultModelForProvider(ModelProvider provider) {
+    return switch (provider) {
+      ModelProvider.gemini || ModelProvider.vertexAi => Model.gemini25Flash,
+      ModelProvider.openAi => Model.gpt35Turbo,
+      ModelProvider.openRouter => Model.claude35Sonnet,
+      ModelProvider.customOpenAiCompatible => Model.gpt35Turbo,
+    };
   }
 }

@@ -7,6 +7,7 @@ import 'package:arb_translate/src/translation_delegates/translate_exception.dart
 import 'package:arb_translate/src/translate_options/translate_options.dart';
 import 'package:arb_translate/src/translation_delegates/chat_gpt_translation_delegate.dart';
 import 'package:arb_translate/src/translation_delegates/gemini_translation_delegate.dart';
+import 'package:arb_translate/src/translation_delegates/openrouter_translation_delegate.dart';
 import 'package:arb_translate/src/translation_delegates/translation_delegate.dart';
 import 'package:arb_translate/src/write_updated_bundle.dart';
 import 'package:file/file.dart';
@@ -39,6 +40,14 @@ Future<void> translate(FileSystem fileSystem, TranslateOptions options) async {
       relaxSyntax: options.relaxSyntax,
     ),
     ModelProvider.openAi => ChatGptTranslationDelegate(
+      model: options.model,
+      apiKey: options.apiKey,
+      batchSize: options.batchSize,
+      context: options.context,
+      useEscaping: options.useEscaping,
+      relaxSyntax: options.relaxSyntax,
+    ),
+    ModelProvider.openRouter => OpenRouterTranslationDelegate(
       model: options.model,
       apiKey: options.apiKey,
       batchSize: options.batchSize,
