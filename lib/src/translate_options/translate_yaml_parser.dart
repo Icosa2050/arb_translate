@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:arb_translate/arb_translate.dart';
 import 'package:file/file.dart';
 import 'package:yaml/yaml.dart';
@@ -205,7 +207,23 @@ class TranslateYamlParser {
       );
     }
 
-    return value;
+    // Expand environment variables in the format ${VAR_NAME}
+    return _expandEnvironmentVariables(value);
+  }
+
+  static String _expandEnvironmentVariables(String input) {
+    return input.replaceAllMapped(
+      RegExp(r'\$\{([^}]+)\}'),
+      (match) {
+        final envVar = match.group(1)!;
+        final envValue = Platform.environment[envVar];
+        if (envValue == null) {
+          print('WARNING: Environment variable $envVar not found, keeping literal value');
+          return match.group(0)!; // Return the original ${VAR} if not found
+        }
+        return envValue;
+      },
+    );
   }
 
   static bool? _tryReadBool(YamlMap yamlMap, String key) {
