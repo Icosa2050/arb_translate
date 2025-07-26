@@ -15,7 +15,10 @@ class OpenRouterTranslationDelegate extends TranslationDelegate {
     required super.useEscaping,
     required super.relaxSyntax,
   })  : _model = model.key,
-        _apiKey = apiKey;
+        _apiKey = apiKey {
+    print('DEBUG: OpenRouter API key received: ${apiKey.substring(0, 15)}... (length: ${apiKey.length})');
+    print('DEBUG: Using model: ${model.key}');
+  }
 
   @override
   int get maxRetryCount => 5;

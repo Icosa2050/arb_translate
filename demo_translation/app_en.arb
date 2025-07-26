@@ -1,0 +1,52 @@
+{
+  "appTitle": "My Shopping App",
+  "welcome": "Welcome to our store",
+  "login": "Log In",
+  "logout": "Log Out",
+  "searchHint": "Search for products...",
+  "addToCart": "Add to Cart",
+  "checkout": "Proceed to Checkout",
+  "itemCount": "{count, plural, one{1 item} other{{count} items}}",
+  "priceFormat": "Price: {price}",
+  "thankYou": "Thank you for your purchase!",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "@welcome": {
+    "description": "Welcome message shown to users"
+  },
+  "@login": {
+    "description": "Login button text"
+  },
+  "@logout": {
+    "description": "Logout button text"
+  },
+  "@searchHint": {
+    "description": "Placeholder text for search field"
+  },
+  "@addToCart": {
+    "description": "Button text to add item to shopping cart"
+  },
+  "@checkout": {
+    "description": "Button text to proceed to checkout"
+  },
+  "@itemCount": {
+    "description": "Shows number of items with pluralization",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@priceFormat": {
+    "description": "Format for displaying prices",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "@thankYou": {
+    "description": "Thank you message after purchase"
+  }
+}

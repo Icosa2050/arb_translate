@@ -233,7 +233,7 @@ class TranslateOptions {
 
   /// Gets the appropriate API key environment variable for the given provider.
   static String? _getApiKeyForProvider(ModelProvider provider) {
-    return switch (provider) {
+    final key = switch (provider) {
       ModelProvider.gemini || ModelProvider.vertexAi => 
         Platform.environment['ARB_TRANSLATE_API_KEY'] ?? 
         Platform.environment['GEMINI_API_KEY'],
@@ -246,6 +246,11 @@ class TranslateOptions {
       ModelProvider.customOpenAiCompatible => 
         Platform.environment['ARB_TRANSLATE_API_KEY'],
     };
+    print('DEBUG: Provider $provider requesting API key');
+    print('DEBUG: ARB_TRANSLATE_API_KEY: ${Platform.environment['ARB_TRANSLATE_API_KEY'] != null ? 'SET' : 'NOT SET'}');
+    print('DEBUG: OPENROUTER_API_KEY: ${Platform.environment['OPENROUTER_API_KEY'] != null ? Platform.environment['OPENROUTER_API_KEY']!.substring(0, 15) + '...' : 'NOT SET'}');
+    print('DEBUG: Resolved key: ${key != null ? key.substring(0, 15) + '... (length: ${key.length})' : 'NULL'}');
+    return key;
   }
 
   /// Gets the default model for the given provider.

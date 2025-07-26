@@ -1,0 +1,12 @@
+{
+  "appTitle": "La Mia App Shopping",
+  "welcome": "Benvenuto nel nostro negozio",
+  "login": "Accedi",
+  "logout": "Esci",
+  "searchHint": "Cerca prodotti...",
+  "addToCart": "Aggiungi al Carrello",
+  "checkout": "Procedi all'Acquisto",
+  "itemCount": "{count, plural, one{1 articolo} other{{count} articoli}}",
+  "priceFormat": "Prezzo: {price}",
+  "thankYou": "Grazie per il tuo acquisto!"
+}

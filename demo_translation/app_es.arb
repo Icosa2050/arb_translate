@@ -1,0 +1,12 @@
+{
+  "appTitle": "Mi App de Compras",
+  "welcome": "Bienvenido a nuestra tienda",
+  "login": "Iniciar Sesión",
+  "logout": "Cerrar Sesión",
+  "searchHint": "Buscar productos...",
+  "addToCart": "Añadir al Carrito",
+  "checkout": "Proceder al Pago",
+  "itemCount": "{count, plural, one{1 artículo} other{{count} artículos}}",
+  "priceFormat": "Precio: {price}",
+  "thankYou": "¡Gracias por su compra!"
+}
