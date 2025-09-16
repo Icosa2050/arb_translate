@@ -3,8 +3,35 @@ sealed class TranslateException implements Exception {
 }
 
 class InvalidApiKeyException implements TranslateException {
+  InvalidApiKeyException({
+    this.provider,
+    this.environmentVariable,
+    this.keyPreview,
+    this.keyLength,
+  });
+
+  final String? provider;
+  final String? environmentVariable;
+  final String? keyPreview;
+  final int? keyLength;
+
   @override
-  String get message => 'Provided API key is not valid';
+  String get message {
+    final buffer = StringBuffer('Provided API key is not valid');
+    if (provider != null) {
+      buffer.write(' for $provider');
+    }
+    if (environmentVariable != null) {
+      buffer.write(' (env $environmentVariable)');
+    }
+    if (keyLength != null) {
+      buffer.write(', length=$keyLength');
+    }
+    if (keyPreview != null && keyPreview!.isNotEmpty) {
+      buffer.write(', preview=$keyPreview');
+    }
+    return buffer.toString();
+  }
 }
 
 class UnsupportedUserLocationException implements TranslateException {

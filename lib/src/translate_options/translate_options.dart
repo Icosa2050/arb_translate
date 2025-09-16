@@ -36,7 +36,10 @@ enum Model {
   claude35Sonnet('anthropic/claude-3.5-sonnet', 'Claude 3.5 Sonnet'),
   claude3Haiku('anthropic/claude-3-haiku', 'Claude 3 Haiku'),
   openRouterGpt4O('openai/gpt-4o', 'GPT-4o (OpenRouter)'),
-  openRouterGemini2Flash('google/gemini-2.0-flash-exp', 'Gemini 2.0 Flash (OpenRouter)');
+  openRouterGemini2Flash(
+    'google/gemini-2.0-flash-exp',
+    'Gemini 2.0 Flash (OpenRouter)',
+  );
 
   const Model(this.key, this.name);
 
@@ -138,7 +141,8 @@ class TranslateOptions {
         yamlResults.modelProvider ??
         ModelProvider.gemini;
 
-    final apiKey = argResults.apiKey ??
+    final apiKey =
+        argResults.apiKey ??
         yamlResults.apiKey ??
         _getApiKeyForProvider(modelProvider);
 
@@ -146,7 +150,18 @@ class TranslateOptions {
       throw MissingApiKeyException();
     }
 
-    final model = argResults.model ??
+    final placeholderMatch = RegExp(r'\$\{[^}]+\}').firstMatch(apiKey);
+    if (placeholderMatch != null) {
+      final placeholder = placeholderMatch.group(0);
+      print(
+        'WARNING: API key for provider ${modelProvider.name} still contains '
+        'placeholder $placeholder. Ensure environment variable '
+        '${_getEnvVarName(modelProvider)} is exported in your shell.',
+      );
+    }
+
+    final model =
+        argResults.model ??
         yamlResults.model ??
         _getDefaultModelForProvider(modelProvider);
     final customModel = argResults.customModel ?? yamlResults.customModel;
@@ -234,18 +249,25 @@ class TranslateOptions {
   /// Gets the appropriate API key environment variable for the given provider.
   static String? _getApiKeyForProvider(ModelProvider provider) {
     final key = switch (provider) {
-      ModelProvider.gemini || ModelProvider.vertexAi => 
-        Platform.environment['GEMINI_API_KEY'],
-      ModelProvider.openAi => 
-        Platform.environment['OPENAI_API_KEY'],
-      ModelProvider.openRouter => 
-        Platform.environment['OPENROUTER_API_KEY'],
-      ModelProvider.customOpenAiCompatible => 
+      ModelProvider.gemini ||
+      ModelProvider.vertexAi => Platform.environment['GEMINI_API_KEY'],
+      ModelProvider.openAi => Platform.environment['OPENAI_API_KEY'],
+      ModelProvider.openRouter => Platform.environment['OPENROUTER_API_KEY'],
+      ModelProvider.customOpenAiCompatible =>
         Platform.environment['ARB_TRANSLATE_API_KEY'],
     };
-    print('DEBUG: Provider $provider requesting API key');
-    print('DEBUG: Using environment variable: ${_getEnvVarName(provider)}');
-    print('DEBUG: Resolved key: ${key != null ? key.substring(0, 15) + '... (length: ${key.length})' : 'NULL'}');
+    final envName = _getEnvVarName(provider);
+    if (key == null || key.isEmpty) {
+      print(
+        'arb_translate: No API key found for provider ${provider.name} '
+        '(env $envName).',
+      );
+    } else {
+      print(
+        'arb_translate: Resolved API key for provider ${provider.name} '
+        '(env $envName) length=${key.length}, preview=${_maskKey(key)}',
+      );
+    }
     return key;
   }
 
@@ -256,6 +278,22 @@ class TranslateOptions {
       ModelProvider.openRouter => 'OPENROUTER_API_KEY',
       ModelProvider.customOpenAiCompatible => 'ARB_TRANSLATE_API_KEY',
     };
+  }
+
+  static String _maskKey(String value) {
+    final cleaned = value.replaceAll(RegExp(r'\s+'), '');
+    if (cleaned.isEmpty) {
+      return '(empty)';
+    }
+    if (cleaned.length <= 3) {
+      return '${cleaned[0]}***';
+    }
+    if (cleaned.length <= 6) {
+      return '${cleaned.substring(0, 2)}***${cleaned.substring(cleaned.length - 1)}';
+    }
+    final prefix = cleaned.substring(0, 4);
+    final suffix = cleaned.substring(cleaned.length - 2);
+    return '$prefix...$suffix';
   }
 
   /// Gets the default model for the given provider.
